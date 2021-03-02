@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func exitIfError(err error) {
@@ -13,17 +15,49 @@ func exitIfError(err error) {
 	}
 }
 
+func randName(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+	b := make([]rune, n)
+	rand.Seed(time.Now().UnixNano())
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+
+	return string(b)
+}
+
+func genRandomProjectName() string {
+	var name string
+	for {
+		name = randName(10)
+		f, err := os.Open(name)
+		if err != nil {
+			f.Close()
+			break
+		}
+	}
+
+	return name
+}
+
 func main() {
 	var err error
 	var cmd *exec.Cmd
+	var name string
 
-	if len(os.Args) < 3 {
+	if len(os.Args) < 2 {
 		fmt.Println("Not enough args!")
 		os.Exit(1)
 	}
 
+	if len(os.Args) == 2 {
+		name = genRandomProjectName()
+	} else {
+		name = os.Args[2]
+	}
+
 	var template = os.Args[1]
-	var name = os.Args[2]
 
 	fmt.Printf("Creating project '%v' from template '%v'...\n", name, template)
 
